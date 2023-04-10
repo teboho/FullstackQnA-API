@@ -2,6 +2,6 @@
 {
     public class Passcode
     {
-        public string Pass { get; set; }
+        public string? Pass { get; set; }
     }
 }
