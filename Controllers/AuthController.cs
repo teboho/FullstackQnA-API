@@ -1,4 +1,4 @@
-﻿using FullstackQnA_API.Extras;
+﻿using FullstackQnA_API.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FullstackQnA_API.Controllers
@@ -7,6 +7,11 @@ namespace FullstackQnA_API.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pass">Query string for logging in</param>
+        /// <returns></returns>
         [HttpGet]
         public IActionResult Authorize(string pass)
         {

@@ -1,4 +1,4 @@
-﻿namespace FullstackQnA_API.Extras
+﻿namespace FullstackQnA_API.Models
 {
     /**
      * Authentication

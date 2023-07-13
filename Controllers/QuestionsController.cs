@@ -1,4 +1,5 @@
 ﻿using FullstackQnA_API.Models;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,33 +9,34 @@ namespace FullstackQnA_API.Controllers
     [ApiController]
     public class QuestionsController : ControllerBase
     {
-        private readonly QuestionsContext _context;
+        private readonly QuestionsContext _QuestionsContext;
+        private readonly AnswersContext _AnswersContext;
 
         public QuestionsController(QuestionsContext context)
         {
-            _context = context;
+            _QuestionsContext = context;
         }
 
         // GET: api/Questions
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Question>>> GetQuestions()
         {
-            if (_context.Questions == null)
+            if (_QuestionsContext.Questions == null)
             {
                 return NotFound();
             }
-            return await _context.Questions.OrderByDescending(q => q.QuestionId).ToListAsync();
+            return await _QuestionsContext.Questions.OrderByDescending(q => q.QuestionId).ToListAsync();
         }
 
         // GET: api/Questions/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Question>> GetQuestion(int id)
         {
-            if (_context.Questions == null)
+            if (_QuestionsContext.Questions == null)
             {
                 return NotFound();
             }
-            var question = await _context.Questions.FindAsync(id);
+            var question = await _QuestionsContext.Questions.FindAsync(id);
 
             if (question == null)
             {
@@ -54,11 +56,11 @@ namespace FullstackQnA_API.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(question).State = EntityState.Modified;
+            _QuestionsContext.Entry(question).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _QuestionsContext.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -80,7 +82,7 @@ namespace FullstackQnA_API.Controllers
         [HttpPost]
         public async Task<ActionResult<Question>> PostQuestion(Question question)
         {
-            if (_context.Questions == null)
+            if (_QuestionsContext.Questions == null)
             {
                 return Problem("Entity set 'QuestionsContext.Questions'  is null.");
             }
@@ -91,35 +93,50 @@ namespace FullstackQnA_API.Controllers
             // set the question as not answered
             question.QuestionAnswered = false;
             //Add the question to the context
-            _context.Questions.Add(question); // we can assume adding the question to the context will create an id for it
-            await _context.SaveChangesAsync();
+            _QuestionsContext.Questions.Add(question); // we can assume adding the question to the context will create an id for it
+            await _QuestionsContext.SaveChangesAsync();
 
             return CreatedAtAction("GetQuestion", new { id = question.QuestionId }, question);
         }
 
-        // DELETE: api/Questions/5
+        /// <summary>
+        /// Supports CORS
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
+        [EnableCors()]
         public async Task<IActionResult> DeleteQuestion(int id)
         {
-            if (_context.Questions == null)
+
+            if (_QuestionsContext.Questions == null)
             {
                 return NotFound();
             }
-            var question = await _context.Questions.FindAsync(id);
+            var question = await _QuestionsContext.Questions.FindAsync(id);
             if (question == null)
             {
                 return NotFound();
             }
 
-            _context.Questions.Remove(question);
-            await _context.SaveChangesAsync();
+            _QuestionsContext.Questions.Remove(question);
+            await _QuestionsContext.SaveChangesAsync();
 
+            // We want to also delete the answers to the question
+            var answer = _AnswersContext.Answers.Where(a => a.QuestionId == id);
+            if (answer != null) {
+                _AnswersContext.Answers.Remove((Answer)answer);
+            }
+            
+            Response.Headers.Add("Access-Control-Allow-Origin", "https://fullstackqna.web.app/");
+
+            //return Ok(new { result  "Delete successful" });
             return NoContent();
         }
 
         private bool QuestionExists(int id)
         {
-            return (_context.Questions?.Any(e => e.QuestionId == id)).GetValueOrDefault();
+            return (_QuestionsContext.Questions?.Any(e => e.QuestionId == id)).GetValueOrDefault();
         }
     }
 }

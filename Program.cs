@@ -9,12 +9,20 @@ namespace FullstackQnA_API
         public static string Passcode = "";
         public static void Main(string[] args)
         {
-            //var myAllowAllOrigins = "_AllowAllOrigins";
+            var CorsAll = "AllowAll";
 
             var builder = WebApplication.CreateBuilder(args);
             Passcode = builder.Configuration["Passcode"];
 
-            builder.Services.AddCors();
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(policy =>
+                {
+                    policy.WithOrigins("https://fullstackqna.web.app", "*")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+                });
+            });
 
             // Build a connection string using secrets
             var conStrBuilder = new SqlConnectionStringBuilder()
@@ -61,12 +69,7 @@ namespace FullstackQnA_API
             app.UseDefaultFiles();
             app.UseStaticFiles();
 
-            app.UseCors(p =>
-            {
-                p.AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader();
-            });
+            app.UseCors();
 
             app.UseAuthorization();
 
