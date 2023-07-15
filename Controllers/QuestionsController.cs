@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NuGet.Versioning;
 
 namespace FullstackQnA_API.Controllers
 {
@@ -12,9 +13,10 @@ namespace FullstackQnA_API.Controllers
         private readonly QuestionsContext _QuestionsContext;
         private readonly AnswersContext _AnswersContext;
 
-        public QuestionsController(QuestionsContext context)
+        public QuestionsController(QuestionsContext questionsContext, AnswersContext answersContext)
         {
-            _QuestionsContext = context;
+            _QuestionsContext = questionsContext;
+            _AnswersContext = answersContext;
         }
 
         // GET: api/Questions
@@ -105,7 +107,6 @@ namespace FullstackQnA_API.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        [EnableCors()]
         public async Task<IActionResult> DeleteQuestion(int id)
         {
 
@@ -119,17 +120,19 @@ namespace FullstackQnA_API.Controllers
                 return NotFound();
             }
 
+            // We want to delete the answers to the question first since this answers are dependent on the question,
+            // otherwise this dependence will cause an error
+            var answer = await _AnswersContext.Answers.FirstOrDefaultAsync(ans => ans.QuestionId == id);
+
+            if (answer != null)                                 
+            {
+                _AnswersContext.Answers.Remove((Answer)answer);
+                await _AnswersContext.SaveChangesAsync();
+            }
+
             _QuestionsContext.Questions.Remove(question);
             await _QuestionsContext.SaveChangesAsync();
-
-            // We want to also delete the answers to the question
-            var answer = _AnswersContext.Answers.Where(a => a.QuestionId == id);
-            if (answer != null) {
-                _AnswersContext.Answers.Remove((Answer)answer);
-            }
             
-            Response.Headers.Add("Access-Control-Allow-Origin", "https://fullstackqna.web.app/");
-
             //return Ok(new { result  "Delete successful" });
             return NoContent();
         }
