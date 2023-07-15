@@ -133,8 +133,8 @@ namespace FullstackQnA_API.Controllers
             _QuestionsContext.Questions.Remove(question);
             await _QuestionsContext.SaveChangesAsync();
             
-            //return Ok(new { result  "Delete successful" });
-            return NoContent();
+            return Ok(new { result = "Delete successful" });
+            //return NoContent();
         }
 
         private bool QuestionExists(int id)
