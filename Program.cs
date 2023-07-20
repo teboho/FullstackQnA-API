@@ -40,7 +40,7 @@ namespace FullstackQnA_API
 
             // Add services to the container.
             builder.Services.AddControllers();
-        
+
             builder.Services.AddDbContext<QuestionsContext>(
                 // Use the connection string from appsettings.json
                 opt => opt.UseSqlServer(connectionString)

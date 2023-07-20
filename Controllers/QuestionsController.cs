@@ -1,8 +1,6 @@
 ﻿using FullstackQnA_API.Models;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NuGet.Versioning;
 
 namespace FullstackQnA_API.Controllers
 {
@@ -124,7 +122,7 @@ namespace FullstackQnA_API.Controllers
             // otherwise this dependence will cause an error
             var answer = await _AnswersContext.Answers.FirstOrDefaultAsync(ans => ans.QuestionId == id);
 
-            if (answer != null)                                 
+            if (answer != null)
             {
                 _AnswersContext.Answers.Remove((Answer)answer);
                 await _AnswersContext.SaveChangesAsync();
@@ -132,7 +130,7 @@ namespace FullstackQnA_API.Controllers
 
             _QuestionsContext.Questions.Remove(question);
             await _QuestionsContext.SaveChangesAsync();
-            
+
             return Ok(new { result = "Delete successful" });
             //return NoContent();
         }
