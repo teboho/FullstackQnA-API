@@ -18,7 +18,7 @@ namespace FullstackQnA_API
             {
                 options.AddDefaultPolicy(policy =>
                 {
-                    policy.WithOrigins("https://fullstackqna.web.app", "*")
+                    policy.WithOrigins(builder.Configuration["AllowedClients"])
                     .AllowAnyHeader()
                     .AllowAnyMethod();
                 });
