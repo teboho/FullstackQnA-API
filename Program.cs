@@ -18,7 +18,7 @@ namespace FullstackQnA_API
             {
                 options.AddDefaultPolicy(policy =>
                 {
-                    policy.WithOrigins(builder.Configuration["AllowedClients"])
+                    policy.WithOrigins(builder.Configuration["localClient"], builder.Configuration["firebaseClient"])
                     .AllowAnyHeader()
                     .AllowAnyMethod();
                 });
