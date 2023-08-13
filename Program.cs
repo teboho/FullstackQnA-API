@@ -12,28 +12,58 @@ namespace FullstackQnA_API
             var CorsAll = "AllowAll";
 
             var builder = WebApplication.CreateBuilder(args);
-            Passcode = builder.Configuration["Passcode"];
-
-            builder.Services.AddCors(options =>
+            SqlConnectionStringBuilder conStrBuilder = null;
+            // if development, read from app settinfs
+            if (builder.Environment.IsDevelopment())
             {
-                options.AddDefaultPolicy(policy =>
+                Passcode = builder.Configuration["Passcode"];
+                builder.Services.AddCors(options =>
                 {
-                    policy.WithOrigins(builder.Configuration["localClient"], builder.Configuration["firebaseClient"])
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
+                    options.AddDefaultPolicy(policy =>
+                    {
+                        policy.WithOrigins(builder.Configuration["localClient"], builder.Configuration["firebaseClient"])
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                    });
                 });
-            });
 
-            // Build a connection string using secrets
-            var conStrBuilder = new SqlConnectionStringBuilder()
+                // Build a connection string using secrets
+                conStrBuilder = new SqlConnectionStringBuilder()
+                {
+                    DataSource = builder.Configuration["DataSource"],
+                    UserID = builder.Configuration["DbUser"],
+                    Password = builder.Configuration["DbPassword"],
+                    InitialCatalog = builder.Configuration["InitCatalog"],
+                    PersistSecurityInfo = false,
+                    Encrypt = true
+                };
+
+            } 
+            else // read from environment variables
             {
-                DataSource = builder.Configuration["DataSource"],
-                UserID = builder.Configuration["DbUser"],
-                Password = builder.Configuration["DbPassword"],
-                InitialCatalog = builder.Configuration["InitCatalog"],
-                PersistSecurityInfo = false,
-                Encrypt = true
-            };
+                Passcode = Environment.GetEnvironmentVariable("Passcode");
+                builder.Services.AddCors(options =>
+                {
+                    options.AddDefaultPolicy(policy =>
+                    {
+                        policy.WithOrigins(Environment.GetEnvironmentVariable("localClient"), Environment.GetEnvironmentVariable("firebaseClient"))
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                    });
+                });
+
+                // Build a connection string using secrets
+                conStrBuilder = new SqlConnectionStringBuilder()
+                {
+                    DataSource = Environment.GetEnvironmentVariable("DataSource"),
+                    UserID = Environment.GetEnvironmentVariable("DbUser"),
+                    Password = Environment.GetEnvironmentVariable("DbPassword"),
+                    InitialCatalog = Environment.GetEnvironmentVariable("InitCatalog"),
+                    PersistSecurityInfo = false,
+                    Encrypt = true
+                };
+            }
+
 
             // Get the new connection string
             var connectionString = conStrBuilder.ConnectionString;

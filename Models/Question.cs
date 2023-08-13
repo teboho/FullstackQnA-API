@@ -6,7 +6,7 @@
         public string? QuestionText { get; set; }
         public string? Quester { get; set; }
 
-        public bool? QuestionAnswered { get; set; }
+        public bool QuestionAnswered { get; set; } = false;
     }
 
     public class BaseEntity

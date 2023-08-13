@@ -28,6 +28,22 @@ namespace FullstackQnA_API.Controllers
             return await _QuestionsContext.Questions.OrderByDescending(q => q.QuestionId).ToListAsync();
         }
 
+
+        // GET: api/Questions
+        [HttpGet("GetUnAnswered")]
+        public async Task<ActionResult<IEnumerable<Question>>> GetUnAnswered()
+        {
+            if (_QuestionsContext.Questions == null)
+            {
+                return NotFound();
+            }
+            return await _QuestionsContext.Questions
+                .OrderByDescending(q => q.QuestionId)
+                .Where(q => q.QuestionAnswered == false)
+                .ToListAsync();
+        }
+
+
         // GET: api/Questions/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Question>> GetQuestion(int id)
